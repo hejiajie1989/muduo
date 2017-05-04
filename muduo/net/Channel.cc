@@ -52,6 +52,9 @@ void Channel::tie(const boost::shared_ptr<void>& obj)
 
 void Channel::update()
 {
+	/* enableReading can call here
+	 * pass channel object point to EventLoop
+	 */
   addedToLoop_ = true;
   loop_->updateChannel(this);
 }
@@ -93,7 +96,7 @@ void Channel::handleEventWithGuard(Timestamp receiveTime)
     if (closeCallback_) closeCallback_();
   }
 
-  if (revents_ & POLLNVAL)
+  if (revents_ & POLLNVAL) /*the decsriptor is not valid*/
   {
     LOG_WARN << "fd = " << fd_ << " Channel::handle_event() POLLNVAL";
   }

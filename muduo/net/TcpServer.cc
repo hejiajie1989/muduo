@@ -98,6 +98,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
   conn->setWriteCompleteCallback(writeCompleteCallback_);
   conn->setCloseCallback(
       boost::bind(&TcpServer::removeConnection, this, _1)); // FIXME: unsafe
+  //这边因为TcpServer的线程ID和选择的ioLoop肯定不相同，所以在runInloop里面会直接将要执行的任务添加到ioLoop的任务队列里面
   ioLoop->runInLoop(boost::bind(&TcpConnection::connectEstablished, conn));
 }
 

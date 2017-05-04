@@ -122,7 +122,7 @@ void EventLoop::loop()
         it != activeChannels_.end(); ++it)
     {
       currentActiveChannel_ = *it;
-      currentActiveChannel_->handleEvent(pollReturnTime_);
+      currentActiveChannel_->handleEvent(pollReturnTime_);/*handle the event, call the registered Callback*/
     }
     currentActiveChannel_ = NULL;
     eventHandling_ = false;
@@ -164,6 +164,9 @@ void EventLoop::queueInLoop(const Functor& cb)
   pendingFunctors_.push_back(cb);
   }
 
+  /* 当别的线程给该线程的EventLoop添加任务的时候
+   * 或者是当在处理任务队列里面的任务的时候也可能会调用queueInLoop(),如果这边不wakeup那么添加的任务只能等到下一次循环的时候才会执行到，增加了延迟，这个可以从doPendingFunction()中的functors中可以看出。
+   */
   if (!isInLoopThread() || callingPendingFunctors_)
   {
     wakeup();
@@ -214,6 +217,8 @@ void EventLoop::queueInLoop(Functor&& cb)
   pendingFunctors_.push_back(std::move(cb));  // emplace_back
   }
 
+  //当别的线程给该线程的EventLoop添加任务的时候需要唤醒
+  //另外如果是在处理任务队列里面的任务的时候触发了queueInLoop()
   if (!isInLoopThread() || callingPendingFunctors_)
   {
     wakeup();
